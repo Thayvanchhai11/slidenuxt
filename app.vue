@@ -1,12 +1,16 @@
 <template>
   <div class="slider-container">
     <div class="slider-header">
-      <span>Xem tất cả</span>
-      <span class="arrow">&#8250;</span>
+      <span @click="showAll = !showAll" style="cursor:pointer">
+        {{ showAll ? 'Thu gọn' : 'Xem tất cả' }}
+      </span>
+      <span class="arrow" @click="showAll = !showAll" style="cursor:pointer">
+        {{ showAll ? '▲' : '›' }}
+      </span>
     </div>
-    <div class="slider">
-      <button class="nav-btn left">&#171;</button>
-      <div class="card-list">
+    <div class="slider" v-if="!showAll">
+      <button class="nav-btn left" @click="scrollLeft">&#171;</button>
+      <div class="card-list" ref="cardList">
         <div v-for="(card, i) in cards" :key="i" class="card">
           <div class="card-img">
             <img :src="card.img" alt="card" />
@@ -15,10 +19,11 @@
           <div class="card-info">
             <div class="card-title">
               <img v-if="card.icon" :src="card.icon" class="icon" />
-              <span v-if="card.type==='match'">Team A <span class="vs">vs</span> Team B</span>
-              <span v-else>Team A <span class="vs">vs</span> Team B</span>
+              <span>
+                {{ card.teamA || 'Team A' }} <span class="vs">vs</span> {{ card.teamB || 'Team B' }}
+              </span>
             </div>
-            <div class="card-caster">BLV NONAME</div>
+            <div class="card-caster">{{ card.caster || 'BLV NONAME' }}</div>
           </div>
           <div class="card-footer">
             <button v-if="card.status==='live'" class="live-btn">LIVE</button>
@@ -29,12 +34,54 @@
           </div>
         </div>
       </div>
-      <button class="nav-btn right">&#187;</button>
+      <button class="nav-btn right" @click="scrollRight">&#187;</button>
+    </div>
+    <div v-else class="all-list">
+      <div class="all-cards">
+        <div v-for="(card, i) in cards" :key="i" class="card">
+          <div class="card-img">
+            <img :src="card.img" alt="card" />
+            <span v-if="card.hot" class="hot-badge">HOT</span>
+          </div>
+          <div class="card-info">
+            <div class="card-title">
+              <img v-if="card.icon" :src="card.icon" class="icon" />
+              <span>
+                {{ card.teamA || 'Team A' }} <span class="vs">vs</span> {{ card.teamB || 'Team B' }}
+              </span>
+            </div>
+            <div class="card-caster">{{ card.caster || 'BLV NONAME' }}</div>
+          </div>
+          <div class="card-footer">
+            <button v-if="card.status==='live'" class="live-btn">LIVE</button>
+            <button v-else-if="card.status==='cancel'" class="cancel-btn">Huỷ lịch</button>
+            <button v-else class="schedule-btn">
+              <span class="bell">&#128276;</span> Đặt lịch
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const cardList = ref(null);
+const showAll = ref(false);
+
+const scrollLeft = () => {
+  if (cardList.value) {
+    cardList.value.scrollBy({ left: -260, behavior: 'smooth' });
+  }
+};
+const scrollRight = () => {
+  if (cardList.value) {
+    cardList.value.scrollBy({ left: 260, behavior: 'smooth' });
+  }
+};
+
 const cards = [
   {
     img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80',
@@ -42,6 +89,9 @@ const cards = [
     type: 'match',
     icon: 'https://cdn-icons-png.flaticon.com/512/69/69524.png',
     status: 'live',
+    teamA: 'Lakers',
+    teamB: 'Warriors',
+    caster: 'BLV A',
   },
   {
     img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
@@ -49,6 +99,9 @@ const cards = [
     type: 'game',
     icon: 'https://cdn-icons-png.flaticon.com/512/833/833314.png',
     status: 'cancel',
+    teamA: 'Fnatic',
+    teamB: 'T1',
+    caster: 'BLV B',
   },
   {
     img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
@@ -56,6 +109,9 @@ const cards = [
     type: 'match',
     icon: 'https://cdn-icons-png.flaticon.com/512/69/69524.png',
     status: 'schedule',
+    teamA: 'Chelsea',
+    teamB: 'Arsenal',
+    caster: 'BLV C',
   },
   {
     img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80',
@@ -63,6 +119,9 @@ const cards = [
     type: 'match',
     icon: 'https://cdn-icons-png.flaticon.com/512/69/69524.png',
     status: 'schedule',
+    teamA: 'Heat',
+    teamB: 'Celtics',
+    caster: 'BLV D',
   },
   {
     img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
@@ -70,6 +129,9 @@ const cards = [
     type: 'game',
     icon: 'https://cdn-icons-png.flaticon.com/512/833/833314.png',
     status: 'schedule',
+    teamA: 'OG',
+    teamB: 'Secret',
+    caster: 'BLV E',
   },
   {
     img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
@@ -77,6 +139,9 @@ const cards = [
     type: 'game',
     icon: 'https://cdn-icons-png.flaticon.com/512/833/833314.png',
     status: 'schedule',
+    teamA: 'NaVi',
+    teamB: 'VP',
+    caster: 'BLV F',
   },
   {
     img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
@@ -84,6 +149,9 @@ const cards = [
     type: 'game',
     icon: 'https://cdn-icons-png.flaticon.com/512/833/833314.png',
     status: 'schedule',
+    teamA: 'SKT',
+    teamB: 'G2',
+    caster: 'BLV G',
   },
   {
     img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
@@ -91,6 +159,9 @@ const cards = [
     type: 'game',
     icon: 'https://cdn-icons-png.flaticon.com/512/833/833314.png',
     status: 'schedule',
+    teamA: 'EDG',
+    teamB: 'RNG',
+    caster: 'BLV H',
   },
 ];
 </script>
@@ -128,6 +199,19 @@ const cards = [
   overflow-x: auto;
   padding: 0 8px;
   scroll-behavior: smooth;
+}
+.all-list {
+  padding: 0 24px 24px 24px;
+}
+.all-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: flex-start;
+}
+.all-cards .card {
+  min-width: 220px;
+  max-width: 240px;
 }
 .card {
   min-width: 220px;
